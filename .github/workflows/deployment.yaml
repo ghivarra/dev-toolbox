@@ -1,0 +1,62 @@
+name: Dev Toolbox Production Deployment
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    if: "!endsWith(github.event.release.tag_name, '-dev')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pull Changes
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_VPS_HOST }}
+          port: ${{ secrets.PROD_VPS_PORT }}
+          username: ${{ secrets.PROD_VPS_USER }}
+          key: ${{ secrets.PROD_VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            APP_DIR="${{ secrets.PROD_VPS_DIR }}"
+            TAG="${{ github.event.release.tag_name }}"
+
+            cd "$APP_DIR"
+            git fetch --tags
+            git checkout "$TAG"
+
+            if [ -n "$(git status --porcelain)" ]; then
+              echo "Dirty working tree, abort"
+              exit 1
+            fi
+
+      - name: Build Dependency & Version
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_VPS_HOST }}
+          port: ${{ secrets.PROD_VPS_PORT }}
+          username: ${{ secrets.PROD_VPS_USER }}
+          key: ${{ secrets.PROD_VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            APP_DIR="${{ secrets.PROD_VPS_DIR }}"
+            TAG="${{ github.event.release.tag_name }}"
+
+            cd "$APP_DIR"
+
+            echo "$TAG" > version.txt
+
+      - name: Clear Cache
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_VPS_HOST }}
+          port: ${{ secrets.PROD_VPS_PORT }}
+          username: ${{ secrets.PROD_VPS_USER }}
+          key: ${{ secrets.PROD_VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            curl https://cache-83.ghivarra.com?token=${{ secrets.CLEAR_CACHE_TOKEN }}
