@@ -39,10 +39,12 @@ function renderHeader(string $title, string $description, string $active = ''): 
 
 function renderFooter(): void
 {
+    $versionFile = __DIR__ . "/../../version.txt";
+    $version = isset($versionFile) ? file_get_contents($versionFile) : "v0.0.1-beta";
     ?>
         </main>
         <footer class="site-footer">
-            <span>Built for quick, everyday developer tasks.</span>
+            <span><?= htmlspecialchars($version) ?> - Built for quick, everyday developer tasks.</span>
             <span>No third-party requests, tracking, or stored data.</span>
         </footer>
     </body>
