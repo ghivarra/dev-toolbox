@@ -2,13 +2,13 @@
 
 ## Overview
 
-Dev Toolbox is a small, dependency-free web application that groups five everyday developer utilities behind a shared interface. The application is published at <https://dev.ghivarra.com> and is designed for quick, one-off transformations without accounts, tracking, or persistent storage.
+Dev Toolbox is a small, dependency-free web application that groups six everyday developer utilities behind a shared interface. The application is published at <https://dev.ghivarra.com> and is designed for quick, one-off transformations without accounts, tracking, or persistent storage.
 
 Most operations run in the browser. Two operations—password hashing and JWT signing—send their inputs to the same PHP application for processing. The code does not persist those inputs, but they are not browser-only operations.
 
 ## Shared experience
 
-- Landing page with direct access to all five workspaces.
+- Landing page with direct access to all six workspaces.
 - Shared navigation with an active-page indicator.
 - Responsive dark interface for desktop, tablet, and mobile widths.
 - Accessible labels, visible keyboard focus, live status messages, and semantic tables.
@@ -25,12 +25,29 @@ The JSON workspace accepts pasted text or a local `.json`/`.txt` file and provid
 - Syntax validation with the browser's JSON parser.
 - JSON string escaping and unescaping.
 - Syntax-highlighted JSON output.
+- Clickable opening braces in Beautify output that expand or collapse every JSON object, including nested objects. These display-only controls never alter copied or downloaded JSON.
 - Input and output character counts.
 - A built-in sample document.
 - Copy and `.json` download actions.
 - `Ctrl+Enter` or `Cmd+Enter` to run the selected action.
 
 Formatting is token-based after validation. This deliberately preserves source details that a parse-and-reserialize implementation could change, including duplicate object keys, key order, large integer text, exponent notation, and original string escapes.
+
+## HTML Tools
+
+The HTML workspace provides:
+
+- A live HTML viewer rendered through an unrestricted `iframe.srcdoc` document.
+- A full-screen preview dialog with Close-button and `Esc` dismissal.
+- HTML minification that removes ordinary comments and collapses whitespace.
+- Protection of `pre`, `textarea`, `script`, and `style` blocks during minification.
+- HTML beautification with 2 spaces, 4 spaces, or tabs.
+- Local `.html`, `.htm`, and `.txt` file input.
+- A built-in sample document.
+- Copy and `.html` download actions.
+- `Ctrl+Enter` or `Cmd+Enter` to run the selected action.
+
+The live viewer allows embedded scripts, styles, forms, navigation, and external resources so complete HTML examples can run as written. Rendering happens only after the user supplies or opens HTML. Because preview code is unrestricted and same-origin, users should only run markup they trust. Beautification is a lightweight source formatter rather than a standards-validating HTML parser.
 
 ## String Tools
 
@@ -115,6 +132,7 @@ Both sources show row and column counts. Tables are assembled with DOM APIs and 
 | Capability | Processing location | Network request | Persistence |
 | --- | --- | --- | --- |
 | JSON formatting, validation, escaping | Browser | None | None |
+| HTML preview, minification, beautification | Browser | Only when supplied HTML requests resources | None |
 | String conversions and counters | Browser | None | None |
 | UUID generation | Browser | None | None |
 | Random alphanumeric generation | Browser | None | None |

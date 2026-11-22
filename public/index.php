@@ -1,13 +1,13 @@
 <?php
 require_once __DIR__ . '/includes/layout.php';
-renderHeader('Developer tools that stay out of your way', 'A focused collection of local utilities for JSON, strings, passwords, JWTs, and tabular data.');
+renderHeader('Developer tools that stay out of your way', 'A focused collection of utilities for JSON, HTML, strings, passwords, JWTs, and tabular data.');
 ?>
 
 <section class="hero">
     <div>
         <span class="eyebrow">Everyday developer utilities</span>
         <h1>Small tools.<br>Zero friction.</h1>
-        <p>Format payloads, transform strings, create credentials, inspect tokens, and turn raw data into readable tables. Everything runs locally in your browser.</p>
+        <p>Format payloads and markup, transform strings, create credentials, inspect tokens, and turn raw data into readable tables. Most tools run locally in your browser.</p>
         <div class="hero-actions">
             <a class="button primary" href="/json/">Open JSON Formatter</a>
             <a class="button" href="#tools">Browse all tools</a>
@@ -33,10 +33,11 @@ renderHeader('Developer tools that stay out of your way', 'A focused collection 
             <span class="eyebrow">The toolkit</span>
             <h2 id="tools-title">Pick a workspace</h2>
         </div>
-        <p>Five focused pages, one consistent workflow.</p>
+        <p>Six focused pages, one consistent workflow.</p>
     </div>
     <div class="tool-grid">
         <a class="tool-card" href="/json/index.php"><span class="tool-icon">{ }</span><h3>JSON</h3><p>Beautify, minify, validate, escape, and unescape JSON.</p><span>Open formatter →</span></a>
+        <a class="tool-card" href="/html/index.php"><span class="tool-icon">&lt;/&gt;</span><h3>HTML</h3><p>Run live previews, minify markup, and beautify HTML source.</p><span>Open HTML tools →</span></a>
         <a class="tool-card" href="/string/index.php"><span class="tool-icon">Aa</span><h3>String</h3><p>Count, encode, decode, change case, and create UUIDs.</p><span>Open string tools →</span></a>
         <a class="tool-card" href="/password/index.php"><span class="tool-icon">***</span><h3>Password</h3><p>Generate random values and create MD5 or bcrypt hashes.</p><span>Open password tools →</span></a>
         <a class="tool-card" href="/jwt/index.php"><span class="tool-icon">JWT</span><h3>JWT</h3><p>Read token contents and sign HMAC JSON Web Tokens.</p><span>Open JWT tools →</span></a>

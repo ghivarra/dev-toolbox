@@ -5,6 +5,7 @@ function renderHeader(string $title, string $description, string $active = ''): 
     $links = [
         '' => ['Home', '/'],
         'json' => ['JSON', '/json/index.php'],
+        'html' => ['HTML', '/html/index.php'],
         'string' => ['String', '/string/index.php'],
         'password' => ['Password', '/password/index.php'],
         'jwt' => ['JWT', '/jwt/index.php'],
@@ -44,8 +45,18 @@ function renderFooter(): void
     ?>
         </main>
         <footer class="site-footer">
-            <span><?= htmlspecialchars($version) ?> - Built for quick, everyday developer tasks.</span>
-            <span>No third-party requests, tracking, or stored data.</span>
+            <div class="footer-copy">
+                <span><?= htmlspecialchars($version) ?> - Built for quick, everyday developer tasks.</span>
+                <span>No third-party requests, tracking, or application data storage.</span>
+            </div>
+            <nav class="footer-nav" aria-label="Footer navigation">
+                <a href="/json/index.php">JSON</a>
+                <a href="/html/index.php">HTML</a>
+                <a href="/string/index.php">String</a>
+                <a href="/password/index.php">Password</a>
+                <a href="/jwt/index.php">JWT</a>
+                <a href="/tables/index.php">Tables</a>
+            </nav>
         </footer>
     </body>
     </html>

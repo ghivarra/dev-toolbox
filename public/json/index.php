@@ -59,22 +59,49 @@ function selectOutput() {
     selection.addRange(range);
 }
 
-function highlightJSON(source) {
-    return source.replace(/"(?:[^"\\]|\\.)*"|-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null|[{}\[\],:]/g, (token, offset) => {
+function escapeHTML(value) {
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function highlightJSON(source, collapsible = false) {
+    const pattern = /"(?:[^"\\]|\\.)*"|-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null|[{}\[\],:]/g;
+    let html = '';
+    let lastIndex = 0;
+    let match;
+    let objectNumber = 0;
+    const objectStack = [];
+
+    while ((match = pattern.exec(source)) !== null) {
+        const token = match[0];
+        html += escapeHTML(source.slice(lastIndex, match.index));
         let type = 'punctuation';
-        if (token[0] === '"') type = /^\s*:/.test(source.slice(offset + token.length)) ? 'key' : 'string';
+        if (token[0] === '"') type = /^\s*:/.test(source.slice(match.index + token.length)) ? 'key' : 'string';
         else if (token === 'null') type = 'null';
         else if (token === 'true' || token === 'false') type = 'boolean';
         else if (/^-?\d/.test(token)) type = 'number';
-        const escaped = token.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        return '<span class="json-' + type + '">' + escaped + '</span>';
-    });
+        const highlighted = '<span class="json-' + type + '">' + escapeHTML(token) + '</span>';
+
+        if (collapsible && token === '{') {
+            const objectId = 'json-object-' + objectNumber++;
+            objectStack.push(objectId);
+            html += '<button class="json-toggle json-punctuation" type="button" data-target="' + objectId + '" aria-label="Collapse JSON object" aria-expanded="true" title="Collapse object">{</button>';
+            html += '<span class="json-collapsible" id="' + objectId + '">';
+        } else if (collapsible && token === '}') {
+            const objectId = objectStack.pop();
+            html += '</span><span class="json-ellipsis hide" id="' + objectId + '-ellipsis">...</span>' + highlighted;
+        } else {
+            html += highlighted;
+        }
+        lastIndex = pattern.lastIndex;
+    }
+
+    return html + escapeHTML(source.slice(lastIndex));
 }
 
 function renderOutput() {
     try {
         JSON.parse(outputText);
-        $('highlighted').innerHTML = highlightJSON(outputText);
+        $('highlighted').innerHTML = highlightJSON(outputText, outputMode === 'beautify');
     } catch (error) {
         $('highlighted').textContent = outputText;
     }
@@ -219,6 +246,7 @@ $('file').onchange = async event => {
 };
 $('copy').onclick = async () => {
     try {
+        // Copy the untouched result, never collapse controls or ellipses from the rendered view.
         await navigator.clipboard.writeText(outputText);
         setStatus('Output copied.', 'success');
     } catch (error) {
@@ -240,6 +268,29 @@ document.addEventListener('keydown', event => {
         event.preventDefault();
         executeAction(activeAction);
     }
+});
+$('highlighted').addEventListener('click', event => {
+    const button = event.target.closest('.json-toggle');
+    if (!button) return;
+    const targetId = button.getAttribute('data-target');
+    const content = document.getElementById(targetId);
+    const ellipsis = document.getElementById(targetId + '-ellipsis');
+    if (!content || !ellipsis) return;
+    const collapse = button.getAttribute('aria-expanded') === 'true';
+    if (collapse) {
+        content.classList.add('hide');
+        content.style.display = 'none';
+        ellipsis.classList.remove('hide');
+        ellipsis.style.display = 'inline';
+    } else {
+        content.classList.remove('hide');
+        content.style.display = '';
+        ellipsis.classList.add('hide');
+        ellipsis.style.display = 'none';
+    }
+    button.setAttribute('aria-expanded', String(!collapse));
+    button.setAttribute('aria-label', (collapse ? 'Expand' : 'Collapse') + ' JSON object');
+    button.title = (collapse ? 'Expand' : 'Collapse') + ' object';
 });
 </script>
 

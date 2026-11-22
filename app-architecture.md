@@ -7,7 +7,7 @@ Dev Toolbox is a server-rendered, multi-page PHP application with embedded vanil
 ```text
 Browser
   |
-  |-- GET /, /json/, /string/, /password/, /jwt/, /tables/
+  |-- GET /, /json/, /html/, /string/, /password/, /jwt/, /tables/
   |      PHP page + shared layout
   |      CSS from /assets/styles.css
   |      inline JavaScript runs each workspace
@@ -32,6 +32,7 @@ Browser
 │   ├── assets/
 │   │   └── styles.css           Entire shared visual and responsive system
 │   ├── json/index.php           Browser-only JSON workspace
+│   ├── html/index.php           Browser-only HTML workspace
 │   ├── string/index.php         Browser-only string and UUID workspace
 │   ├── password/index.php       Password UI plus hashing POST endpoint
 │   ├── jwt/index.php            JWT UI plus signing POST endpoint
@@ -53,7 +54,7 @@ Every GET page loads `public/includes/layout.php` and follows the same lifecycle
 
 `renderHeader()` owns the HTML document start, metadata, stylesheet reference, brand, global navigation, and opening `<main>`. It HTML-escapes the supplied title and description. The `activeKey` selects the current navigation item and adds `aria-current="page"`.
 
-`renderFooter()` closes `<main>`, reads `version.txt` two directories above the include, renders privacy/version copy, and closes the document. The current existence check tests the path variable rather than the file itself, so deployments are expected to provide a readable `version.txt`.
+`renderFooter()` closes `<main>`, reads `version.txt` two directories above the include, renders privacy/version copy and workspace navigation, and closes the document. The current existence check tests the path variable rather than the file itself, so deployments are expected to provide a readable `version.txt`.
 
 ## Runtime responsibilities
 
@@ -77,6 +78,7 @@ Each page has isolated, inline JavaScript with no shared JavaScript bundle. It u
 - `JSON`, `TextEncoder`, and `TextDecoder` for data conversion.
 - `crypto.getRandomValues()` and `crypto.randomUUID()` for secure random values.
 - `File.text()` for local JSON file input.
+- An unrestricted `iframe.srcdoc` preview for HTML input.
 - `navigator.clipboard` for copying.
 - `Blob`, object URLs, and a temporary link for JSON download.
 - `fetch()` for the two same-origin PHP operations.
@@ -101,7 +103,7 @@ The layout has no external fonts, images, scripts, or stylesheets.
 
 ### Browser-only tool flow
 
-This flow applies to JSON, strings, UUIDs, random alphanumeric values, JWT reading, and table generation.
+This flow applies to JSON, HTML, strings, UUIDs, random alphanumeric values, JWT reading, and table generation.
 
 ```text
 User input -> page event handler -> validation/transformation
@@ -109,6 +111,10 @@ User input -> page event handler -> validation/transformation
 ```
 
 Inputs never leave the browser through application code. Local JSON files are read directly with the File API.
+
+The JSON formatter retains a separate plain-text output value for copying and downloads while generating escaped syntax-highlight markup for display. In Beautify mode only, object braces wrap their nested display tokens in collapsible spans, allowing every object to be toggled without reparsing or changing the original formatted output. Ellipses and collapse controls exist only in the rendered DOM and never enter clipboard or download output.
+
+The HTML viewer assigns input directly to unrestricted, same-origin inline and full-screen `iframe` elements through `srcdoc`. The full-screen version is hosted in a native modal `dialog`, closes through its button or the browser's standard `Esc` behavior, and clears its document on close. Embedded scripts, styles, forms, navigation, and external resources behave normally. This also means preview code can access same-origin browser state and interact with the parent page, so users must choose trusted input. Minification and beautification are lightweight text transformations and do not depend on a server or third-party parser.
 
 ### Hashing flow
 
@@ -192,8 +198,9 @@ To add another browser-only tool:
 1. Create `public/<tool>/index.php`.
 2. Include `public/includes/layout.php` with `dirname(__DIR__)`.
 3. Add the route to the shared `$links` map and, if appropriate, the landing-page tool grid.
-4. Reuse the existing CSS components before adding new styles.
-5. Keep untrusted output in `textContent`; escape any content that must become HTML.
+4. Add the route to the shared footer navigation.
+5. Reuse the existing CSS components before adding new styles.
+6. Keep untrusted output in `textContent`; escape any content that must become HTML.
 
 To add a server operation, keep the request branch before page rendering, validate again on the server, use an explicit operation allowlist, return a consistent JSON envelope and status code, and document whether sensitive input crosses the browser boundary. For larger APIs, extracting endpoint logic from the view files would reduce coupling and make automated tests easier.
 
